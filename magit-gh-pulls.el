@@ -45,17 +45,38 @@
 
 ;;; Code:
 
-(require 'eieio)
+(eval-when-compile
+  (require 'cl))
 
+(require 'eieio)
 (require 'magit)
 (require 'gh-pulls)
 
 (defun magit-gh-pulls-get-api ()
   (gh-pulls-api "api" :sync t :cache t :num-retries 1))
 
+(defun magit-gh-pulls-get-all-repos ()
+  (let (repos)
+    (loop with res
+          for entry in (split-string (magit-get "-l") "\n")
+          when (string-match "^remote\\.[^.]+\\.url.*github.com/\\(.*\\)\\.git" entry)
+          collect (match-string 1 entry) into res
+          finally return res)))
+
+(defun magit-gh-pulls-save-repo-config ()
+  (let ((repo (completing-read "repo: " (magit-gh-pulls-get-all-repos))))
+    (magit-run* (cons magit-git-executable
+                      (list "config" "--add" "magit.extension" "gh-pulls")))
+    (magit-run* (cons magit-git-executable
+                      (list "config" "magit.gh-pulls-repo" repo)))
+    repo))
+
 (defun magit-gh-pulls-guess-repo ()
   (let* ((cfg (magit-get "magit" "gh-pulls-repo"))
-         (split (split-string cfg "/")))
+         (split
+          (split-string (or cfg
+                            (magit-gh-pulls-save-repo-config))
+                        "/")))
     (cons (car split) (cadr split))))
 
 (magit-define-inserter gh-pulls ()
