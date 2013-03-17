@@ -2,7 +2,7 @@ This is an experimental magit extension for manipulating GitHub pull requests
 
 In order to use this, configure your repository like:
   $ git config --add magit.extension gh-pulls       # or whatever is required to load that extension in magit for this repository
-  $ git config magit.gh-pulls-repo = <user>/<repo>  # your github repository
+  $ git config magit.gh-pulls-repo <user>/<repo>    # your github repository
 
 and of course, load magit-gh-pulls.el
 
